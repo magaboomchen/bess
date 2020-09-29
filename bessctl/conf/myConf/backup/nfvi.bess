@@ -1,0 +1,58 @@
+import scapy.all as scapy
+import socket
+
+def aton(ip):
+     return socket.inet_aton(ip)
+
+def ntohl(num):
+     return socket.ntohl(num)
+
+def htonl(num):
+     return socket.htonl(num)
+
+# NIC
+myport::PMDPort(port_id=0, num_inc_q=1, num_out_q=1)
+input0::QueueInc(port=myport, qid=0)
+output0::QueueOut(port=myport, qid=0)
+
+# PMDPort
+vhostpmd = PMDPort(name="vhost", vdev="net_vhost0,iface=/tmp/vsock")
+vhostpmd2 = PMDPort(name="vhost2", vdev="net_vhost2,iface=/tmp/vsock2")
+vhostpmd_out::PortOut(port=vhostpmd.name)
+vhostpmd_in::PortInc(port=vhostpmd2.name)  
+
+# VXLAN VNI Classifier
+em::ExactMatch(fields=[{'offset':23, 'num_bytes':1},
+                       {'offset':30, 'num_bytes':4},
+                       {'offset':45, 'num_bytes':4}])
+
+### rule 1
+em.set_default_gate(gate=0)
+em.add(fields=[{'value_int':17}, {'value_bin':aton('192.168.122.111')}, {'value_int':htonl(1193046)}], gate=1)
+em.add(fields=[{'value_int':17}, {'value_bin':aton('192.168.122.111')}, {'value_int':htonl(999)}], gate=2)
+
+# process
+####input0 -> em
+input0 -> Dump(interval=1) -> em
+
+em:0 -> Sink()
+em:1 -> VXLANDecap() -> vhostpmd_out
+em:2 -> Sink()
+
+# output to NIC
+outmerge::Merge() -> output0
+
+
+vhostpmd_in \
+    -> SetMetadata(attrs=
+            [{'name': 'tun_ip_src', 'size': 4, 'value_bin': aton('192.168.122.111')},
+             {'name': 'tun_ip_dst', 'size': 4, 'value_bin': aton('192.168.122.110')},
+             {'name': 'tun_id', 'size': 4, 'value_int': 1000}]) \
+    -> VXLANEncap(dstport=4789) \
+    -> IPEncap() \
+    -> SetMetadata(attrs=
+            [{'name': 'ether_src', 'size': 6, 'value_bin': '\x52\x54\x00\x9d\xf4\xf4'},
+             {'name': 'ether_dst', 'size': 6, 'value_bin': '\x52\x54\x00\xde\xa6\xcf'}]) \
+    -> EtherEncap() \
+    -> outmerge
+

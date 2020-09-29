@@ -1,0 +1,17 @@
+vhostpmd = PMDPort(name="vhost", vdev="net_vhost0,iface=/tmp/vsock")
+vhostpmd2 = PMDPort(name="vhost2", vdev="net_vhost2,iface=/tmp/vsock2")
+
+Source() -> vhostpmd_out::PortOut(port=vhostpmd.name)
+vhostpmd_in::PortInc(port=vhostpmd2.name) -> Sink()
+
+myport::PMDPort(port_id=0, num_inc_q=1, num_out_q=1)
+input0::QueueInc(port=myport, qid=0) #This module will read from myport on queue 0
+output0::QueueOut(port=myport, qid=0) #This module will write to myport on queue 0
+
+input0 -> Sink()
+outmerge::Merge() -> output0
+#Source() -> outmerge
+
+
+host_if = VPort(ifname='eth_host', ip_addrs=['10.255.99.1/24'])
+PortInc(port=host_if) -> outmerge

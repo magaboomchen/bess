@@ -1,0 +1,9 @@
+container_if1 = VPort(ifname='eth_vport_test1', docker='test', ip_addrs=['10.255.99.2/24'])
+container_if2 = VPort(ifname='eth_vport_test2', docker='test', ip_addrs=['10.255.99.3/24'])
+
+myport::PMDPort(port_id=0, num_inc_q=1, num_out_q=1)
+input0::QueueInc(port=myport, qid=0)
+output0::QueueOut(port=myport, qid=0)
+
+input0 -> PortOut(port=container_if1)
+PortInc(port=container_if2) -> output0

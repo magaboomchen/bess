@@ -1,0 +1,5 @@
+vhostpmd = PMDPort(name="vhost", vdev="net_vhost0,iface=/tmp/vsock")
+vhostpmd2 = PMDPort(name="vhost2", vdev="net_vhost2,iface=/tmp/vsock2")
+
+Source() -> vhostpmd_out::PortOut(port=vhostpmd.name)
+vhostpmd_in::PortInc(port=vhostpmd2.name) ->Sink()

@@ -1,0 +1,2 @@
+vhostpmd = PMDPort(name="vhost", vdev="net_vhost0,iface=/tmp/vsock")
+Source() -> vhostpmd_out::PortOut(port=vhostpmd.name)
