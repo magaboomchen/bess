@@ -156,8 +156,8 @@ class BESS(object):
 
     DEF_PORT = 10514
     #DEF_PORT = 19999
-    #DEF_GRPC_URL = "localhost:" + str(DEF_PORT)
-    DEF_GRPC_URL = "192.168.122.134:" + str(DEF_PORT)
+    DEF_GRPC_URL = "localhost:" + str(DEF_PORT)
+    #DEF_GRPC_URL = "192.168.122.134:" + str(DEF_PORT)
     BROKEN_CHANNEL = "AbnormalDisconnection"
     CLOSING_CHANNEL = "ConnectionClosing"
 

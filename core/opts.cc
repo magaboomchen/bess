@@ -39,8 +39,8 @@
 // Port this BESS instance listens on.
 // Panda came up with this default number
 static const int kDefaultPort = 0x02912;  // 10514 in decimal
-//static const char *kDefaultBindAddr = "127.0.0.1";
-static const char *kDefaultBindAddr = "192.168.122.134";
+static const char *kDefaultBindAddr = "127.0.0.1";
+//static const char *kDefaultBindAddr = "192.168.122.134";
 
 // TODO(barath): Rename these flags to something more intuitive.
 DEFINE_bool(t, false, "Dump the size of internal data structures");
